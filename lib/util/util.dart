@@ -1,5 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 const String GOOGLE_MAPS_API_KEY = "";
 const double CAMERA_ZOOM = 14.0;
+const LatLng defaultLatLng = LatLng(6.5244, 3.3792);
 
 String nameValidator(String value){
   Pattern pattern =
@@ -32,4 +36,19 @@ String pwdValidator(String value) {
   }else {
     return null;
   }
+}
+
+
+void showSnackBar(String value, BuildContext context){
+  ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
+    backgroundColor: Colors.red,
+    duration: Duration(seconds: 4),
+    elevation: 5.0,
+    content: Text(value,
+    textAlign: TextAlign.left,
+      style: TextStyle(
+        color: Colors.white
+      ),
+    ),
+  ));
 }
