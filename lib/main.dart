@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 void main() {
   runApp(Init());
@@ -25,11 +26,13 @@ class _InitState extends State<Init> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.black,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+    return OverlaySupport(
+      child: MaterialApp(
+        theme: ThemeData(
+          primarySwatch: Colors.black,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+      )
     );
   }
 }
