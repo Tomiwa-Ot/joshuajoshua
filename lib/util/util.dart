@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-const String GOOGLE_MAPS_API_KEY = "";
+const String GOOGLE_MAPS_API_KEY = "AIzaSyAskh4n6UiJ8WEOGq8G68fAqo_OJ4KiO1c";
 const double CAMERA_ZOOM = 14.0;
 const LatLng defaultLatLng = LatLng(6.5244, 3.3792);
+
 
 String nameValidator(String value){
   Pattern pattern =
