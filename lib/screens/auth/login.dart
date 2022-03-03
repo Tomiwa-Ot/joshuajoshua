@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:joshua_joshua/screens/homepage.dart';
+import 'package:joshua_joshua/util/util.dart';
 
 class Login extends StatefulWidget {
 
@@ -11,7 +12,9 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
+  final _formKey = GlobalKey<FormState>();
   String email, password;
+  bool _obscureText = true;
 
   Future login(String email, String password) async {
     try {
@@ -36,8 +39,136 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      
+    return SingleChildScrollView(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white
+        ),
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height / 2,
+              decoration: BoxDecoration(
+                color: Colors.black
+              ),
+            ),
+            SizedBox(
+              height: 40.0,
+            ),
+            Container(
+              margin: EdgeInsets.only(left: 20.0, right: 20.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      enableSuggestions: true,
+                      validator: emailValidator,
+                      onChanged: (value) => email = value,
+                      keyboardType: TextInputType.emailAddress,
+                      cursorColor: Colors.black,
+                      decoration: new InputDecoration(
+                        labelText: "Email",
+                        prefixIcon: Icon(
+                          Icons.alternate_email_rounded,
+                          color: Colors.black,
+                        ),
+                        labelStyle: TextStyle(
+                          color: Colors.black,
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                          borderRadius: new BorderRadius.circular(35.0),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        )
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    TextFormField(
+                      enableSuggestions: false,
+                      validator: pwdValidator,
+                      onChanged: (value) => password = value,
+                      keyboardType: TextInputType.visiblePassword,
+                      obscureText: _obscureText,
+                      cursorColor: Colors.black,
+                      decoration: new InputDecoration(
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        labelText: "Password",
+                        suffixIcon: IconButton(
+                          icon : Icon(
+                            _obscureText
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: _obscureText ? Colors.grey : Colors.black,
+                          ),
+                          onPressed: (){
+                            setState(() {
+                              _obscureText = !_obscureText;
+                            });
+                          },
+                        ),
+                        prefixIcon: Icon(
+                          Icons.lock_outline,
+                          color: Colors.black,
+                        ),
+                        labelStyle: TextStyle(
+                          color: Colors.black,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        )
+                      ),
+                    ),
+                    SizedBox(
+                      height: 20.0,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+
+                      },
+                      child: Container(
+                        margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                        alignment: Alignment.center,
+                        height: 60.0,
+                        width: MediaQuery.of(context).size.width - 40,
+                        decoration: BoxDecoration(
+                          color: Colors.black
+                        ),
+                        child: Text("Login",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 25.0
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 }
