@@ -41,6 +41,8 @@ dev_dependencies:
   geolocator: ^8.2.0
   overlay_support: ^1.2.1
   shimmer: ^2.0.0
+  google_place: any
+  geocoding: ^2.0.1
   permission_handler: ^9.2.0
 
 # For information on the generic Dart part of this file, see the
