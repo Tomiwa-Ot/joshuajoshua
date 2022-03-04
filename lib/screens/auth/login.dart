@@ -14,9 +14,12 @@ class _LoginState extends State<Login> {
 
   final _formKey = GlobalKey<FormState>();
   String email, password;
-  bool _obscureText = true;
+  bool _obscureText = true, _loading = false;
 
   Future login(String email, String password) async {
+    setState(() {
+      _loading = true;
+    });
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
       SharedPreferences authStatus = await SharedPreferences.getInstance();
@@ -24,15 +27,18 @@ class _LoginState extends State<Login> {
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>
         Homepage()), (route) => false);
     } catch(e) {
+      setState(() {
+        _loading = false;
+      });
       switch(e.message){
         case "There is no user record corresponding to this identifier. The user may have been deleted.":
-          // showSnackBar("Incorrect Username/Password");
+          showSnackBar("Incorrect Username/Password", context);
           break;
         case "The password is invalid or the user does not have a password.":
-          // showSnackBar("Incorrect Username/Password");
+          showSnackBar("Incorrect Username/Password", context);
           break;
         default:
-          // showSnackBar("Something went wrong");
+          showSnackBar("Something went wrong", context);
       }
     }
   }
@@ -115,7 +121,7 @@ class _LoginState extends State<Login> {
                             _obscureText
                                 ? Icons.visibility
                                 : Icons.visibility_off,
-                            color: _obscureText ? Colors.grey : Colors.black,
+                            color:  Colors.black,
                           ),
                           onPressed: (){
                             setState(() {
@@ -143,7 +149,9 @@ class _LoginState extends State<Login> {
                     ),
                     GestureDetector(
                       onTap: () {
-
+                        if (_formKey.currentState.validate()) {
+                          login(email, password);
+                        }
                       },
                       child: Container(
                         margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
@@ -153,7 +161,11 @@ class _LoginState extends State<Login> {
                         decoration: BoxDecoration(
                           color: Colors.black
                         ),
-                        child: Text("Login",
+                        child: _loading ? Center(
+                        child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        ) : Text("Login",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
