@@ -15,9 +15,16 @@ class _RegisterState extends State<Register> {
 
   final _formKey = GlobalKey<FormState>();
   String lastname, firstname, phone, email, password;
-  bool _obscureText = true, _checkBoxValue = false;
+  bool _obscureText = true, _checkBoxValue = false, _loading = false;
 
+  void checkBoxState(){
+    _checkBoxValue = !_checkBoxValue;
+  }
+  
   Future register(String lastname, String firstname, String email, String phone, String password) async {
+    setState(() {
+      _loading = true;
+    });
     try {
       FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
       UserCredential createdUser = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
@@ -36,12 +43,15 @@ class _RegisterState extends State<Register> {
           Homepage()), (route) => false);
       }
     } catch(e) {
+      setState(() {
+        _loading = false;
+      });
       switch(e.message){
         case "The email address is already in use by another account.":
-          // showSnackBar("Email is registered to another account");
+          showSnackBar("Email is registered to another account", context);
           break;
         default:
-          // showSnackBar("Something went wrong");
+          showSnackBar("Something went wrong", context);
       }
     }
   }
@@ -75,6 +85,7 @@ class _RegisterState extends State<Register> {
                       validator: nameValidator,
                       onChanged: (value) => firstname = value,
                       keyboardType: TextInputType.name,
+                      textCapitalization: TextCapitalization.words,
                       cursorColor: Colors.black,
                       decoration: new InputDecoration(
                         labelText: "Firstname",
@@ -108,6 +119,7 @@ class _RegisterState extends State<Register> {
                       validator: nameValidator,
                       onChanged: (value) => lastname = value,
                       keyboardType: TextInputType.name,
+                      textCapitalization: TextCapitalization.words,
                       cursorColor: Colors.black,
                       decoration: new InputDecoration(
                         labelText: "Lastname",
@@ -138,7 +150,7 @@ class _RegisterState extends State<Register> {
                     ),
                     TextFormField(
                       enableSuggestions: true,
-                      // validator: nameValidator,
+                      validator: phoneValidator,
                       onChanged: (value) => phone = value,
                       keyboardType: TextInputType.phone,
                       cursorColor: Colors.black,
@@ -153,7 +165,6 @@ class _RegisterState extends State<Register> {
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red),
-                          borderRadius: new BorderRadius.circular(35.0),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.red),
@@ -222,7 +233,7 @@ class _RegisterState extends State<Register> {
                             _obscureText
                                 ? Icons.visibility
                                 : Icons.visibility_off,
-                            color: _obscureText ? Colors.grey : Colors.black,
+                            color: Colors.black,
                           ),
                           onPressed: (){
                             setState(() {
@@ -256,19 +267,61 @@ class _RegisterState extends State<Register> {
                           activeColor: Colors.black,
                           onChanged: (_checkBoxValue){
                             setState(() {
-                              _checkBoxValue = !_checkBoxValue;
+                              checkBoxState();
                             });
                           },
                         ),
-                        Text("Agree to our Terms & Conditions"),
+                        Text("Agree to our "),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                title: Text("Terms & Condiitions"),
+                                actions: [
+                                  GestureDetector(
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: 30.0,
+                                      width: 40.0,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(2.0)
+                                      ),
+                                      child: Text('Ok',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500
+                                        ),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              )
+                            );
+                          },
+                          child: Text("Terms & Conditions",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
+                        )
                       ],
                     ),
                     SizedBox(
                       height: 20.0,
                     ),
                     GestureDetector(
-                      onTap: () {
-
+                      onTap:  _checkBoxValue ? () {
+                        if (_formKey.currentState.validate()) {
+                          register(lastname, firstname, email, phone, password);
+                        }
+                      } : () {
+                        showSnackBar("Agree to Terms & Conditions", context);
                       },
                       child: Container(
                         margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
@@ -278,7 +331,11 @@ class _RegisterState extends State<Register> {
                         decoration: BoxDecoration(
                           color: Colors.black
                         ),
-                        child: Text("Register",
+                        child: _loading ? Center(
+                          child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                          ) : Text("Register",
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
