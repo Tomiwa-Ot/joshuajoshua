@@ -34,9 +34,9 @@ class _InitState extends State<Init> {
   }
 
   void initState() {
-    super.initState();
     initializeFirebase();
     checkAuthStatus();
+    super.initState();
   }
 
   @override
