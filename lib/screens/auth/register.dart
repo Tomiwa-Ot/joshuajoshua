@@ -35,7 +35,8 @@ class _RegisterState extends State<Register> {
           "email" : email,
           "phone" : phone,
           "photo" : "",
-          "balance" : 0.00
+          "balance" : 0.00,
+          "isBusy" : false
         });
         SharedPreferences authStatus = await SharedPreferences.getInstance();
         authStatus.setBool("isLoggedIn", true);
