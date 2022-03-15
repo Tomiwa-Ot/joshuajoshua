@@ -77,7 +77,9 @@ class _WalletState extends State<Wallet> {
                   }
 
                   List<DocumentSnapshot> docs = snapshot.data.data();
-                  List<Widget> transactions = docs.map((doc) => Transactions()).toList();
+                  List<Widget> transactions = docs.map((doc) => Transactions(
+                    snapshot: doc
+                  )).toList();
                   return ListView.builder(
                     itemCount: transactions.length,
                     itemBuilder: (context, index) {

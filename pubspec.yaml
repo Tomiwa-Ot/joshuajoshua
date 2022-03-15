@@ -42,6 +42,7 @@ dev_dependencies:
   overlay_support: ^1.2.1
   shimmer: ^2.0.0
   google_place: any
+  ticketview: ^1.0.0
   geocoding: ^2.0.1
   permission_handler: ^9.2.0
 
