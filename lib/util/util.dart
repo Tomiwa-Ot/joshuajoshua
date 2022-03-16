@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:joshua_joshua/screens/shop/checkout.dart';
 
 const String GOOGLE_MAPS_API_KEY = "AIzaSyBNnzq0CRkSPs10L-I3o1Zxjux8_OAyFhM";
 const double CAMERA_ZOOM = 17.0;
 const LatLng defaultLatLng = LatLng(6.5244, 3.3792);
 const String PAYSTACK_PUBKEY = "";
+List<Map<String, dynamic>> cart = [];
 
 
 String nameValidator(String value){
@@ -55,7 +57,7 @@ String pwdValidator(String value) {
 
 void showSnackBar(String value, BuildContext context){
   ScaffoldMessenger.of(context).showSnackBar(new SnackBar(
-    backgroundColor: Colors.red,
+    backgroundColor: Color.fromARGB(255, 199, 75, 66),
     duration: Duration(seconds: 4),
     elevation: 5.0,
     content: Text(value,
@@ -66,3 +68,50 @@ void showSnackBar(String value, BuildContext context){
     ),
   ));
 }
+
+
+void showCartModal(
+  BuildContext context, List<Map<String, dynamic>> cart, void Function(int) removeItem, void Function(int, int) modifyQuantity, void Function(BuildContext) navigate) {
+  showModalBottomSheet(
+    context: context,
+    builder: (context) {
+      return cart.length != 0 ? Container(
+        margin: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
+        child: Column(
+          children: [
+            ListView.builder(
+              itemCount: cart.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  trailing: IconButton(
+                    icon: Icon(Icons.close, color: Colors.grey,),
+                    onPressed: () {
+                      removeItem(index);
+                    },
+                  ),
+                );
+              },
+            ),
+            // checkout button total cost and everybady
+          ],
+        )
+      ) : Container(
+        margin: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("Cart is empty")
+          ],
+        ),
+      );
+    }
+  );
+}
+
+void gotoCheckOutPage(BuildContext context) {
+  Navigator.push(context, MaterialPageRoute(builder: (context) =>
+    Checkout()
+  )); 
+}
+
