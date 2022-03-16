@@ -490,6 +490,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.8"
+  ticketview:
+    dependency: "direct dev"
+    description:
+      name: ticketview
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   typed_data:
     dependency: transitive
     description:

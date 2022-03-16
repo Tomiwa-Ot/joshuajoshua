@@ -1,8 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:joshua_joshua/screens/shop/shop.dart';
 import 'package:joshua_joshua/screens/wallet.dart';
+import 'package:joshua_joshua/screens/widgets/ongoing.dart';
+import 'package:joshua_joshua/screens/widgets/progress.dart';
 import 'package:joshua_joshua/util/util.dart';
 import 'package:joshua_joshua/screens/auth.dart';
+import 'package:joshua_joshua/screens/widgets/search.dart';
+import 'package:joshua_joshua/screens/widgets/address.dart';
+import 'package:joshua_joshua/screens/widgets/loading.dart';
+import 'package:joshua_joshua/screens/widgets/barberDetails.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -21,13 +28,18 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
 
+  int _index = 0;
+  bool _showCurrentLocationButton = true;
   String location, email;
-  bool _isLocationSet = false;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   User user = FirebaseAuth.instance.currentUser;
   Stream<DocumentSnapshot> stream;
+  DocumentSnapshot barber;
   GoogleMapController _controller;
+  LatLng latLng ;
   Marker _destination, _source;
+  Map<String, Marker> _sources;
+  List<Widget> draggableSheetWidgets;
   CameraPosition _cameraPosition;
   CameraPosition _initialCameraPosition = CameraPosition(
     zoom: CAMERA_ZOOM,
@@ -36,13 +48,59 @@ class _HomepageState extends State<Homepage> {
 
   void initState() {
     super.initState();
+    draggableSheetWidgets = [
+      Search(callback: updateDraggableSheetWidget), Address(callback: updateDraggableSheetWidget),
+      Loading(latLng: latLng, callback: updateDraggableSheetWidget, setSourceMarkers: setSourceMarkers,), 
+      BarberDetails(callback: updateDraggableSheetWidget, barber: barber,),
+      Progress(snapshot: barber, callback: updateDraggableSheetWidget,)
+    ];
     stream = user != null ? FirebaseFirestore.instance.collection("users")
         .doc(user.uid).snapshots() : null;
+    // possibly streansubscription to constantly show ongoing session when true
   }
 
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void updateDraggableSheetWidget(bool isDestinationNull, bool isSourceNull, bool showCurrentLocationBtn, int index) {
+    setState(() {
+      if(isDestinationNull) _destination = null;
+      if(isSourceNull) _source = null; _sources = null;
+      _showCurrentLocationButton = showCurrentLocationBtn;
+      _index = index;
+    });
+  }
+
+  void updateSourceMarkerPosition(DocumentSnapshot snapshot) {
+    // GeoFirePoint point = snapshot.get("position");
+    setState(() {
+      _source = Marker(
+        markerId: MarkerId(snapshot.id),
+        infoWindow: InfoWindow(title: 'Barber\'s Location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        // position: LatLng(point.latitude, point.longitude)
+      );
+    });
+  }
+
+  void setSourceMarkers(Map<String, DocumentSnapshot> availableBarbers) {
+    availableBarbers.forEach((key, value) {
+      barber = value;
+      // GeoFirePoint point = snapshot.get("position");
+      _sources[key] = Marker(
+        markerId: MarkerId(key),
+        infoWindow: InfoWindow(title: 'Barber\'s Location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        // position: LatLng(point.latitude, point.longitude)
+        onTap: () {
+          setState(() {
+            _index = 3;
+          });
+        }
+      );
+    });
   }
 
   Future gotoCurrentLocation() async {
@@ -57,24 +115,21 @@ class _HomepageState extends State<Homepage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
-    LatLng latLng = LatLng(position.latitude, position.longitude);
+    latLng = LatLng(position.latitude, position.longitude);
     _cameraPosition = CameraPosition(target: latLng, zoom: CAMERA_ZOOM);
     List<Placemark> placemarks = await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
     setState(() {
       location = "${placemarks.first.street.toString()} ${placemarks.first.subAdministrativeArea.toString()} ${placemarks.first.postalCode.toString()} ${placemarks.first.administrativeArea.toString()}";
       _destination = Marker(
-        markerId: const MarkerId('destination'),
+        markerId: MarkerId('destination'),
         infoWindow: InfoWindow(title: 'My Location'),
         position: latLng
       );
-      _isLocationSet = true;
+      _index = 1;
     });
     _controller.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
   }
 
-  Future searchForNearbyBarbers() async {
-
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -152,6 +207,19 @@ class _HomepageState extends State<Homepage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ListTile(
+                    leading: Icon(CupertinoIcons.cart, color: Colors.black),
+                    title: Text("Shop",
+                      style: TextStyle(
+                        fontSize: 17.0
+                      ),
+                    ),
+                    onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                        Shop()
+                      )); 
+                    },
+                  ),
+                  ListTile(
                     leading: Icon(CupertinoIcons.money_dollar, color: Colors.black),
                     title: Text("Wallet",
                       style: TextStyle(
@@ -214,16 +282,17 @@ class _HomepageState extends State<Homepage> {
             zoomControlsEnabled: false,
             zoomGesturesEnabled: true,
             onTap: (LatLng _latLng) async {
+              latLng = _latLng;
               _cameraPosition = CameraPosition(target: _latLng, zoom: CAMERA_ZOOM);
               List<Placemark> placemarks = await placemarkFromCoordinates(_latLng.latitude, _latLng.longitude);
               setState(() {
                 location = "${placemarks.first.street.toString()} ${placemarks.first.subAdministrativeArea.toString()} ${placemarks.first.postalCode.toString()} ${placemarks.first.administrativeArea.toString()}";
                 _destination = Marker(
-                  markerId: const MarkerId('destination'),
+                  markerId: MarkerId('destination'),
                   infoWindow: InfoWindow(title: 'My Location'),
                   position: _latLng
                 );
-                _isLocationSet = true;
+                _index = 1;
               });
               _controller.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
             },
@@ -265,90 +334,28 @@ class _HomepageState extends State<Homepage> {
                     )
                   ]
                 ),
-                child: _isLocationSet ? ListView(
-                  children: [
-                    ListTile(
-                      title: Container(
-                        margin: EdgeInsets.only(left: 30.0),
-                        child: Text(location,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18.0
-                          ),
-                        ),
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(CupertinoIcons.clear),
-                        color: Colors.black,
-                        onPressed: () {
-                          setState(() {
-                            _destination = null;
-                            _isLocationSet = false;
-                          });
-                        },
-                      ),
-                    ),
-                    ListTile(
-                      title: Container(
-                        height: 50.0,
-                        margin: EdgeInsets.only(left: 30.0, right: 30.0),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.black
-                        ),
-                        child: Text("Proceed",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 22.0
-                          ),
-                        ),
-                      ),
-                      onTap: () {
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: stream,
+                  builder: (context, snapshot) {
+                    if(snapshot.data.get("isBusy")) {
+                      return Ongoing();
+                    }
 
-                      },
-                    )
-                  ],
-                ) : ListView(
-                  children: [
-                    Container(
-                      height: 60.0,
-                      color: Colors.grey.withOpacity(0.3),
-                      margin: EdgeInsets.fromLTRB(30.0, 0.0, 30.0, 0.0),
-                      child: TextField(
-                      cursorColor: Colors.black,
-                      onChanged: (val) {
-                        
-                      },
-                      textInputAction: TextInputAction.go,
-                      decoration: InputDecoration(
-                        icon: Container(
-                          margin: EdgeInsets.only(left: 20.0, bottom: 15.0),
-                          width: 10.0,
-                          height: 10.0,
-                          child: Icon(CupertinoIcons.search, color: Colors.black,),
-                        ),
-                        hintText: "Search",
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.only(left: 15.0, top: 14.0)
-                      ),
-                    ),
-                  )
-                  ],
+                    return draggableSheetWidgets[_index];
+                  },
                 )
               );
             },
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _showCurrentLocationButton ? FloatingActionButton(
         backgroundColor: Colors.black,
         onPressed: () {
           gotoCurrentLocation();
         },
         child: Icon(CupertinoIcons.location_fill, color: Colors.white,),
-      ),
+      ) : Container(),
     );
   }
 }
