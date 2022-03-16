@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:joshua_joshua/screens/shop/items.dart';
 import 'package:joshua_joshua/util/util.dart';
 
@@ -13,10 +14,11 @@ class Shop extends StatefulWidget {
 class _ShopState extends State<Shop> {
 
   Stream<DocumentSnapshot> stream;
+  User user = FirebaseAuth.instance.currentUser;
 
   void initState() {
     super.initState();
-    stream = FirebaseFirestore.instance.collection("products").doc().snapshots();
+    stream = user != null ? FirebaseFirestore.instance.collection("products").doc().snapshots() : null;
   }
 
 
