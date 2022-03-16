@@ -34,6 +34,7 @@ class _RegisterState extends State<Register> {
           "fullname" : "$lastname $firstname",
           "email" : email,
           "phone" : phone,
+          "address" : "",
           "photo" : "",
           "balance" : 0.00,
           "isBusy" : false
