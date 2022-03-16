@@ -23,7 +23,31 @@ class _LoadingState extends State<Loading> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      
+      margin: EdgeInsets.only(left: 10.0, right: 10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text("Loading"),
+          Padding(
+            padding: EdgeInsets.only(left: 10.0, right: 10.0),
+            child: LinearProgressIndicator(),
+          ),
+          GestureDetector(
+            onTap: () {
+              widget.callback(true, true, true, 0);
+            },
+            child: Container(
+              alignment: Alignment.center,
+              child: Text("Cancel",
+                style: TextStyle(
+                  color: Colors.red
+                ),
+              ),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
