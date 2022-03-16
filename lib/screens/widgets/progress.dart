@@ -1,13 +1,13 @@
 import 'dart:async';
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Progress extends StatefulWidget {
 
-  Progress({this.uid, this.updateSourceMarkerPosition, this.callback});
+  Progress({this.snapshot, this.updateSourceMarkerPosition, this.callback});
 
-  final String uid;
+  final DocumentSnapshot snapshot;
   final void Function(DocumentSnapshot) updateSourceMarkerPosition;
   final void Function(bool, bool, bool, int) callback;
 
@@ -18,12 +18,13 @@ class Progress extends StatefulWidget {
 class _ProgressState extends State<Progress> {
 
   Stream<DocumentSnapshot> stream;
+  User user = FirebaseAuth.instance.currentUser;
   // StreamSubscription streamSub;
 
   void initState() {
     super.initState();
-    stream = FirebaseFirestore.instance.collection("barbers")
-        .doc(widget.uid).snapshots();
+    stream = user != null ? FirebaseFirestore.instance.collection("barbers")
+        .doc(widget.snapshot.id).snapshots() : null;
     // streamSub = stream.listen((event) {
     //   stream.
     // });
